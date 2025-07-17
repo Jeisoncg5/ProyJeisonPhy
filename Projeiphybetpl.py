@@ -1,4 +1,7 @@
-# LigaBetplay
+# Jeison Cristancho Garcia
+# Proyecto: Gestion de la Liga Betplay
+# Fecha: 2025-17-07
+# LigaBetplay ###
 # Hacer un programa que permita gestionar la Liga Betplay,
 # permitiendo registrar equipos, fechas, marcadores, goles a favor y en contra,
 # y planteles de los equipos. El programa debe tener un menú que permita
@@ -16,8 +19,10 @@
 import os
 
 equipos = []
+puntajeEquipo = 0
 fechas = []
-
+jugador = []
+plantel = []
 
 
 def agregarEquipo():
@@ -38,6 +43,7 @@ def agregarFecha():
     input("Presione Enter para continuar...")
 
 def agregarMarcador():
+    global equipos
     marcadorLo = input("Ingrese el Equipo Local: ")
     print(f"Marcador '{marcadorLo}' registrado correctamente.")
     
@@ -46,7 +52,7 @@ def agregarMarcador():
 
 def menuBetplay() -> int:
     os.system('cls' if os.name == 'nt' else 'clear')
-    print("Menú de gestión de la Liga Betplay")
+    print("              Menú de gestión de la Liga Betplay")
     print("1. Registrar Equipo")
     print("2. Programar Fecha")
     print("3. Registrar Marcador")
@@ -81,6 +87,19 @@ def menuPlantel() -> int:
         print("Entrada no válida. Por favor, ingrese un número.")
         return menuPlantel()
 
+def agregarJugador():
+    global jugador
+    Jugador = input("Ingrese el Nombre del jugador dorsal y posicion de juego (nombre/dorsal/posicion): ")
+    print(f"Jugador registrado: {Jugador}")
+    input("Presione Enter para continuar...")
+    jugador.append(Jugador)
+
+def agregarPlantel():
+    global plantel
+    plantel = input("Ingrese el Nombre de la persona del equipo tecnico y su cargo (nombre/cargo): ")
+    print(f"Persona registrada: {plantel}")
+    input("Presione Enter para continuar...")
+
 
 
 
@@ -102,6 +121,15 @@ if __name__ == "__main__":
                 print("Registrar Equipo con Más Goles A Favor")
             case 6:
                 menuPlantel()
+                while True:
+                    opcion_plantel = menuPlantel()
+                    match opcion_plantel:
+                        case 1:
+                            agregarJugador()
+                        case 2:
+                            agregarPlantel()
+                        case 3:
+                            break
             case 7:
                 print("Saliendo del sistema. ¡Hasta luego!")
                 break
