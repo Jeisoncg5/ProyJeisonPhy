@@ -17,14 +17,14 @@
 """
 
 import os
+from tabulate import tabulate
 
 equipos = []
 fechas = []
-jugador = []
-plantel = []
 
 
-def agregarEquipo():
+
+def agregarEquipo():                       #Funcion para registrar un equipo
     global equipos
     nombreEquipo = input("Ingrese el nombre del equipo que desea agregar: ").strip()
     if not nombreEquipo:
@@ -32,16 +32,17 @@ def agregarEquipo():
     elif nombreEquipo in [e[0] for e in equipos]:
         print("Error: El equipo ya está registrado.")
     else:
-        equipos.append([nombreEquipo])
+        equipos.append([nombreEquipo, 0, 0, 0, 0, 0, 0, 0, jugador, plantel])  # Añade el equipo con estadísticas iniciales
+                      # [nombre,    pj, pg, pe, pp, gf, gc, pts]
         print(f"¡Equipo '{nombreEquipo}' registrado con éxito!")
 
-def agregarFecha():
+def agregarFecha():                     #Funcion para programar una fecha
     global equipos, fechas
-    if len(equipos) < 2:
+    if len(equipos) < 2:               # Verificar si hay al menos dos equipos registrados
         print("Necesitas al menos dos equipos registrados para programar una fecha.")
         return
     print ("Equipos registrados:")
-    for nombreEquipo in equipos:
+    for nombreEquipo in equipos:         # Mostrar los equipos registrados
         print(f"- {nombreEquipo[0]}")
     local = input("Ingrese el equipo Local: ")
     visitante = input("Ingrese el equipo visitante: ")
@@ -50,14 +51,13 @@ def agregarFecha():
     elif local == visitante:
         print("Error: Un equipo no puede jugar contra sí mismo.")
     else:
-        seleccion = [local, visitante, None, None]  # [local, visitante, marcador_local, marcador_visitante]
+        seleccion = [local, visitante, None, None]  # [local, visitante, golLocal, golVisitante]
         fechas.append(seleccion)
         print(f"Partido '{local} vs {visitante}' programado.")
 
 
-
-def agregarMarcador():
-    global fechas
+def agregarMarcador():                          #Funcion para registrar el marcador de un partido
+    global equipos, fechas
     print("Partidos programados:")
     if not fechas:
         print("No hay partidos programados.")
@@ -83,59 +83,98 @@ def agregarMarcador():
         fechas[seleccion - 1][3] = golVisitante                   # Actualizar los goles en la lista
         print("Marcador actualizado correctamente.")
 
+        local, visitante = fechas[seleccion-1][0], fechas[seleccion-1][1]  # Actualizar estadísticas de los equipos
+        for equipo in equipos:  # Busca el equipo local y visitante en la lista de equipos y actualiza sus estadísticas
+            if equipo[0] == local: # Busca el equipo local en la lista de equipos
+                equipo[1] += 1  # PJ  Sunma 1 partido jugado al equipo local
+                equipo[5] += golLocal  # GF sunma los goles a favor del equipo local
+                equipo[6] += golVisitante  # GC suma los goles en contra del equipo local
+                if golLocal > golVisitante:
+                    equipo[2] += 1  # PG suma 1 partido ganado al equipo local
+                    equipo[7] += 3  # PTS suma 3 puntos al equipo local
+                elif golLocal == golVisitante: # PE suma 1 partido empatado al equipo local
+                    equipo[3] += 1  # PE suma 1 partido empatado al equipo local
+                    equipo[7] += 1 # PTS suma 1 punto al equipo local
+                else:
+                    equipo[4] += 1  # PP  Partido perdido por parte de local                         #Busca el equipo local y visitante en la lista de equipos y actualiza sus estadísticas
+
+            if equipo[0] == visitante:  # Busca el equipo visitante en la lista de equipos
+                equipo[1] += 1  # PJ suma 1 partido jugado al equipo visitante
+                equipo[5] += golVisitante  # GF suma los goles a favor del equipo visitante
+                equipo[6] += golLocal  # GC suma los goles en contra del equipo visitante
+                if golVisitante > golLocal:
+                    equipo[2] += 1  # PG suma 1 partido ganado al equipo visitante
+                    equipo[7] += 3  # PTS suma 3 puntos al equipo visitante
+                elif golVisitante == golLocal: 
+                    equipo[3] += 1  # PE suma 1 partido empatado al equipo visitante
+                    equipo[7] += 1
+                else:
+                    equipo[4] += 1  # PP suma 1 partido perdido al equipo visitante
 
     except ValueError:
         print("Entrada inválida.")    
 
 
-def equipomasgolesfavor():
-    global equipos, fechas
+def equipoMasGolesFavor():  # Función para mostrar el equipo con más goles a favor
+    global equipos
     if not equipos:
         print("No hay equipos registrados.")
         return
 
-    mejor_ataque = None
-    max_goles_favor = -1
+    maxgolFavor = -1
+    mejorEquipo = None
 
-    for nombreEquipo in equipos:
-        if len(nombreEquipo) < 2:
-            continue
-        goles_favor = nombreEquipo[1]
-        if goles_favor > max_goles_favor:
-            max_goles_favor = goles_favor
-            mejor_ataque = nombreEquipo[0]
+    for equipo in equipos:   # Recorre la lista de equipos
+        if len(equipo) >= 6:  # Asegura que tenga al menos hasta GF
+            golesFavor = equipo[5]  # Goles a favor del equipo
+            if golesFavor > maxgolFavor:  # Compara los goles a favor
+                maxgolFavor = golesFavor
+                mejorEquipo = equipo  # Guarda toda la fila del equipo
 
-    if mejor_ataque:
-        print(f"El equipo con más goles a favor es: {mejor_ataque} ({max_goles_favor} goles).")
+    if mejorEquipo:
+        print(f"El equipo con más goles a favor es: {mejorEquipo[0]} ({mejorEquipo[5]} goles).")
     else:
         print("No hay datos de goles a favor disponibles.")
 
+def equipoMasGolesContra():  # Función para mostrar el equipo con más goles en contra
+    global equipos
+    if not equipos:
+        print("No hay equipos registrados.")
+        return
 
-#def agregarMarcador():
-#    global equipos, fechas
-#    print("Partidos programados:")
-#    if not fechas:
-#        print("No hay partidos programados.")
-#        return
-#    for i in range(len(fechas)):
-#        print(f"{i + 1}. {fechas[i][0]} vs {fechas[i][1]}")
-#    golLocal = int(input("Ingrese Los Goles del equipo Local: "))
-#    golVisitante = int(input("Ingrese Los Goles del equipo Visitante: "))
-#    if golLocal < 0 or golVisitante < 0:
-#        print("Error: Los goles no pueden ser negativos.")
-#        return  
-    
+    maxgolContra = -1
+    peorEquipo = None
+
+    for equipo in equipos:   # Recorre la lista de equipos
+        if len(equipo) >= 7:  # Asegura que tenga al menos hasta GC
+            golesContra = equipo[6]  # Goles en contra del equipo
+            if golesContra > maxgolContra:  # Compara los goles en contra
+                maxgolContra = golesContra
+                peorEquipo = equipo  # Guarda toda la fila del equipo
+
+    if peorEquipo:
+        print(f"El equipo con mas goles en contra es: {peorEquipo[0]} ({peorEquipo[6]} goles).")
+    else:
+        print("No hay datos de goles en contra disponibles.")
+
    
-def menuBetplay() -> int:
+def menuBetplay() -> int:               #Funcion para el menu principal de la Liga Betplay (Llamar desde el main)
     os.system('cls' if os.name == 'nt' else 'clear')
-    print("              Menú de gestión de la Liga Betplay")
+    global equipos, fechas
+    print("+==============================================================+")
+    print("||             Menú de gestión de la Liga Betplay             ||")
+    print("+==============================================================+")
     print("1. Registrar Equipo")
     print("2. Programar Fecha")
     print("3. Registrar Marcador")
-    print("4. Registrar Equipo con Más Goles Contra")
-    print("5. Registrar Equipo con Más Goles A Favor")
+    print("4. Registrar Equipo con Más Goles A Favor")
+    print("5. Registrar Equipo con Más Goles En Contra")
     print("6. Registrar Plantel")
     print("7. Salir")
+    header = ["Equipo", "PJ", "PG", "PE", "PP", "GF", "GC", "PTS"]             
+    print(tabulate(equipos, header, tablefmt="outline"))                # Imprime la tabla de estadísticas de los equipos (Haciendo uso de la libreria tabulate)
+    header = ["Local", "Visitante", "Goles Local", "Goles Visitante"]   # Tabla improvisada para ir mirando como se guardan las listas de fechas
+    print(tabulate(fechas, header, tablefmt="outline"))
     try:
         opcion = int(input("Seleccione una opción: "))
         if opcion < 1 or opcion > 7:
@@ -147,12 +186,13 @@ def menuBetplay() -> int:
         return menuBetplay()
 
 
-def menuPlantel() -> int:
+def menuPlantel() -> int:   #Funcion para el menu del plantel  (llamar desde el caso 6 del menuBetplay)
     os.system('cls' if os.name == 'nt' else 'clear')
     print("             Registro del Plantel")
     print("1. Registrar Jugador")
     print("2. Registrar Plantel")
     print("3. Salir")
+   #print(tabulate(plantel, header, tablefmt="outline"))
     try:
         opcion = int(input("Seleccione una opción: "))
         if opcion < 1 or opcion > 4:
@@ -192,15 +232,15 @@ if __name__ == "__main__":
             case 3:
                 agregarMarcador()
             case 4:
-                print("Registrar Equipo con Más Goles Contra")
+                equipoMasGolesFavor()
             case 5:
-                print("Registrar Equipo con Más Goles A Favor")
+                equipoMasGolesContra()
             case 6:
                 while True:
                     opcion_plantel = menuPlantel()
                     match opcion_plantel:
                         case 1:
-                            agregarJugador()
+                            agregarJugador()          
                         case 2:
                             agregarPlantel()
                         case 3:
