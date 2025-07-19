@@ -19,10 +19,10 @@
 import os
 from tabulate import tabulate
 
-equipos = []
-fechas = []
-
-
+equipos = [] # Lista para almacenar los equipos y sus estadísticas
+fechas = [] # Lista para almacenar los equipos y sus estadísticas
+jugador = []  # Lista para almacenar los jugadores
+plantel = []  # Lista para almacenar el personal del equipo técnico
 
 def agregarEquipo():                       #Funcion para registrar un equipo
     global equipos
@@ -32,7 +32,7 @@ def agregarEquipo():                       #Funcion para registrar un equipo
     elif nombreEquipo in [e[0] for e in equipos]:
         print("Error: El equipo ya está registrado.")
     else:
-        equipos.append([nombreEquipo, 0, 0, 0, 0, 0, 0, 0, jugador, plantel])  # Añade el equipo con estadísticas iniciales
+        equipos.append([nombreEquipo, 0, 0, 0, 0, 0, 0, 0, [],[]])  # Añade el equipo con estadísticas iniciales
                       # [nombre,    pj, pg, pe, pp, gf, gc, pts]
         print(f"¡Equipo '{nombreEquipo}' registrado con éxito!")
 
@@ -171,7 +171,7 @@ def menuBetplay() -> int:               #Funcion para el menu principal de la Li
     print("5. Registrar Equipo con Más Goles En Contra")
     print("6. Registrar Plantel")
     print("7. Salir")
-    header = ["Equipo", "PJ", "PG", "PE", "PP", "GF", "GC", "PTS"]             
+    header = ["Equipo", "PJ", "PG", "PE", "PP", "GF", "GC", "PTS", "Jugadores", "Plantel"]  # Tabla de estadísticas de los equipos     
     print(tabulate(equipos, header, tablefmt="outline"))                # Imprime la tabla de estadísticas de los equipos (Haciendo uso de la libreria tabulate)
     header = ["Local", "Visitante", "Goles Local", "Goles Visitante"]   # Tabla improvisada para ir mirando como se guardan las listas de fechas
     print(tabulate(fechas, header, tablefmt="outline"))
@@ -188,11 +188,13 @@ def menuBetplay() -> int:               #Funcion para el menu principal de la Li
 
 def menuPlantel() -> int:   #Funcion para el menu del plantel  (llamar desde el caso 6 del menuBetplay)
     os.system('cls' if os.name == 'nt' else 'clear')
+    global equipos
     print("             Registro del Plantel")
     print("1. Registrar Jugador")
     print("2. Registrar Plantel")
     print("3. Salir")
-   #print(tabulate(plantel, header, tablefmt="outline"))
+    #header = ["Nombre", "Dorsal", "Posición"]  # Tabla improvisada para ir mirando como se guardan los jugadores
+    #print(tabulate( equipos[8], header, tablefmt="outline"))
     try:
         opcion = int(input("Seleccione una opción: "))
         if opcion < 1 or opcion > 4:
@@ -203,17 +205,84 @@ def menuPlantel() -> int:   #Funcion para el menu del plantel  (llamar desde el 
         print("Entrada no válida. Por favor, ingrese un número.")
         return menuPlantel()
 
-def agregarJugador():
-    global jugador
-    Jugador = input("Ingrese el Nombre del jugador dorsal y posicion de juego (nombre/dorsal/posicion): ")
-    print(f"Jugador registrado: {Jugador}")
-    input("Presione Enter para continuar...")
-    jugador.append(Jugador)
+def agregarJugador():  # Funcion para agregar un jugador a un equipo
+    global equipos
 
-def agregarPlantel():
-    global plantel
-    input("Ingrese el Nombre de la persona del equipo tecnico y su cargo (nombre/cargo): ")
-    print(f"Persona registrada: {plantel}")
+    if not equipos:
+        print("Primero debes registrar al menos un equipo.")   #si no hay equipos registrados, no se puede agregar un jugador
+        return
+
+    print("Equipos disponibles:")
+    for i, equipo in enumerate(equipos):
+        print(f"{i + 1}. {equipo[0]}")
+
+    try:
+        seleccion = int(input("Seleccione el número del equipo al que desea agregar un jugador: "))
+        if seleccion < 1 or seleccion > len(equipos):
+            print("Selección inválida.")
+            return
+    except ValueError:
+        print("Debe ingresar un número.")
+        return
+
+    datos = input("Ingrese el jugador (nombre/dorsal/posición): ").strip()  # Formato: nombre/dorsal/posición
+    try:
+        nombre, dorsal, posicion = datos.split('/')        
+        jugador = {
+            nombre.strip(),
+            int(dorsal.strip()),
+            posicion.strip()
+        }
+
+        if len(equipos[seleccion - 1]) < 9:
+            equipos[seleccion - 1].append([])  # Agrega la lista de jugadores si no existe    
+
+        equipos[seleccion - 1][8].append(jugador)  # Agrega el jugador a la lista interna
+
+        print(f"Jugador {nombre} registrado en {equipos[seleccion - 1][0]}.")  
+    except ValueError:
+        print("Formato incorrecto. Debe ser: nombre/dorsal/posición")
+
+    input("Presione Enter para continuar...")
+
+def agregarPlantel():  # Funcion para agregar personal técnico a un equipo
+    global equipos
+
+    if not equipos:
+        print("Primero debes registrar al menos un equipo.")
+        return
+
+    print("Equipos disponibles:")
+    for i, equipo in enumerate(equipos):
+        print(f"{i + 1}. {equipo[0]}")
+
+    try:
+        seleccion = int(input("Seleccione el número del equipo al que desea agregar personal técnico: ")) 
+        if seleccion < 1 or seleccion > len(equipos):
+            print("Selección inválida.")
+            return
+    except ValueError:
+        print("Debe ingresar un número.")
+        return
+
+    datos = input("Ingrese el personal técnico (nombre/cargo): ").strip()  # Formato: nombre/cargo
+    try:
+        nombre, cargo = datos.split('/')
+        persona = {
+            nombre.strip(),
+            cargo.strip()
+        }
+
+        if len(equipos[seleccion - 1]) < 10:
+            while len(equipos[seleccion - 1]) < 10:
+                equipos[seleccion - 1].append([]) 
+
+        equipos[seleccion - 1][9].append(persona)
+
+        print(f"{cargo.strip()} {nombre.strip()} agregado a {equipos[seleccion - 1][0]}.")
+    except ValueError:
+        print("Formato incorrecto. Debe ser: nombre/cargo")
+
     input("Presione Enter para continuar...")
 
 
